@@ -2,6 +2,7 @@
 
 이 프로젝트는 다수의 로봇으로부터 발생하는 실시간 로그 데이터를 처리하고 실시간으로 시각화하는 모니터링 시스템입니다. 특히 **Spring WebFlux**를 활용한 **Back Pressure** 제어와 **Server-Sent Events (SSE)** 를 통한 데이터 스트리밍에 초점을 맞추고 있습니다.
 
+<img width="1908" height="860" alt="image" src="https://github.com/user-attachments/assets/dd034014-9e30-41c7-a11b-72e6d637b5e4" />
 
 ## 🚀 주요 기능
 
