@@ -17,7 +17,7 @@
 *   **Zone 1 (DB → SSE)**: `onBackpressureBuffer(256, DROP_OLDEST)` 전략을 통해 클라이언트의 수신 속도가 느릴 경우 최신 데이터를 우선적으로 전달합니다.
 
 <div align="center">
-  <img width="785" height="675" alt="image" src="https://github.com/user-attachments/assets/b5326f51-7390-4949-add2-b10b2941b8ef" />
+  <img width="913" height="1082" alt="image" src="https://github.com/user-attachments/assets/6c83557f-734f-4f5d-a1a8-a1a3d3a707ef" />
 </div>
 
 ### 3. 과거 데이터 조회
