@@ -87,7 +87,7 @@ flowchart TD
 Log를 DB에 적재하는 과정에서 발생할 수 있는 병목 현상을 제어하고 안정성을 확보하기 위해 다음의 핵심 기능들이 작동한다.
 
 ### 4.1. 🛡️ 우선순위 분리 큐와 효율적인 Back Pressure 제어
-- **📁 소스 파일**: [`RobotPriorityQueueBuffer.java`](./back-pressure-practice/src/main/java/com/example/robot/service/RobotPriorityQueueBuffer.java)
+- **📁 소스 파일**: [`RobotPriorityQueueBuffer.java`](https://github.com/song-dela-moon/Robot-RT-Monitoring-Dashboard/blob/kangsan/docs/back-pressure-practice/src/main/java/com/example/service/RobotPriorityQueueBuffer.java)
 
 - **우선순위 분리큐 (Generator → DB)**: P1~P5 각각 독립된 버퍼로 관리하며 P1(Critical) 이벤트가 항상 먼저 DB에 저장되도록 보장한다.
 - **버퍼바운싱 (Bouncing)**: 특정 주 대기열이 한계에 도달해 포화 상태가 되면, 대기열의 데이터를 임시 큐(Overflow Queue)로 이동시켜 재시도한다.
@@ -168,7 +168,7 @@ if (entry.enqueuedAt().isBefore(threshold)) {
 ```
 
 ### 4.2. 🧪 가상 트래픽 시뮬레이션 및 테스트 시나리오
-- **📁 소스 파일**: [`RobotDummyDataService.java`](./back-pressure-practice/src/main/java/com/example/robot/service/RobotDummyDataService.java)
+- **📁 소스 파일**: [`RobotDummyDataService.java`](https://github.com/song-dela-moon/Robot-RT-Monitoring-Dashboard/blob/kangsan/docs/back-pressure-practice/src/main/java/com/example/service/RobotDummyDataService.java)
 
 시스템이 버틸 수 있는 병목 현상의 한계를 체감하고 테스트하기 위해 로봇의 로그 가치(우선순위)와 데이터 발생량을 파이프라인의 입구에서 동적으로 조작한다. 이 기능은 상태 값을 예약 변경하는 스케줄러 영역과 상태 값을 읽어 데이터를 실제로 찍어내는 공장 영역으로 철저히 분리되어 동작한다.
 
@@ -195,6 +195,14 @@ double cpu = switch (phase) {
     case P1_BURST   -> 85.0 + random.nextDouble() * 15.0; // 무조건 P1 생산 유도
     default         -> Math.random();
 };
+
+// 3. priority: CPU 기반 결정 (더미데이터 생성 시 중요도 결정)
+        int priority;
+        if (cpu >= 85) priority = 1;
+        else if (cpu >= 65) priority = 2;
+        else if (cpu >= 40) priority = 3;
+        else if (cpu >= 20) priority = 4;
+        else priority = 5;
 ```
 
 ---
@@ -203,7 +211,7 @@ double cpu = switch (phase) {
 클라이언트가 데이터를 안전하게 전달받고 시각화할 수 있도록 지원하는 브로드캐스트 스트림과 프론트엔드 연동 구현이다.
 
 ### 5.1. ⚡ 내부 데이터 스트림과 Zone 1 Back Pressure
-- **📁 소스 파일**: [`RobotSseService.java`](./back-pressure-practice/src/main/java/com/example/robot/service/RobotSseService.java)
+- **📁 소스 파일**: [`RobotSseService.java`](https://github.com/song-dela-moon/Robot-RT-Monitoring-Dashboard/blob/kangsan/docs/back-pressure-practice/src/main/java/com/example/service/RobotSseService.java#L47-L50)
 
 버퍼를 무사히 빠져나온 로그 데이터는 R2DBC를 통해 논블로킹 속도로 DB에 저장된다. 저장이 완료되는 즉시, 이벤트 발송 역할을 하는 매니저 시스템을 거쳐 접속된 사용자 채널로 단방향 브로드캐스팅(SSE)된다. 양방향 웹소켓 대신 단방향 스트림인 SSE 방식을 채택하여 서버 연결 부담을 대폭 감소시킨다.
 
@@ -217,7 +225,7 @@ sink.asFlux().onBackpressureBuffer(256, dropped -> {
 ```
 
 ### 5.2. 🔌 클라이언트 연동 API 엔드포인트 
-- **📁 소스 파일**: [`RobotController.java`](./back-pressure-practice/src/main/java/com/example/robot/controller/RobotController.java)
+- **📁 소스 파일**: [`RobotController.java`](https://github.com/song-dela-moon/Robot-RT-Monitoring-Dashboard/blob/kangsan/docs/back-pressure-practice/src/main/java/com/example/controller/RobotController.java)
 
 클라이언트가 서버의 모니터링 데이터를 원활하게 활용할 수 있도록 세 가지 핵심 REST API 엔드포인트를 노출한다. `RobotController`를 통해 전체 로봇 식별, 과거 데이터 목록 조회 및 실시간 스트림 연결을 지원한다.
 
@@ -240,7 +248,7 @@ public Flux<RobotLogEvent> streamRobotLogs(
 ```
 
 ### 5.3. 🖥️ 프론트엔드 대시보드 이벤트 수신 및 윈도우 최적화
-- **📁 소스 파일**: [`robot-dashboard/app/page.tsx`](./robot-dashboard/app/page.tsx)
+- **📁 소스 파일**: [`robot-dashboard/app/page.tsx`](https://github.com/song-dela-moon/Robot-RT-Monitoring-Dashboard/blob/kangsan/docs/robot-dashboard/app/page.tsx)
 
 프론트엔드 환경은 고해상도 모니터링 모드 전용으로 서버 단방향 채널(SSE)을 수립하여 실시간으로 쏟아지는 데이터를 1초 주기로 구독하여 화면 차트를 구성한다. 
 
