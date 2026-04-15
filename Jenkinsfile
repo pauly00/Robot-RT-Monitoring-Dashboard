@@ -30,19 +30,20 @@ pipeline {
         stage('Build & Static Analysis (SonarQube)') {
             steps {
                 dir('back-pressure-practice') {
-                    echo "🚀 테스트 환경을 생략하고 소나큐브로 코드를 전송하여 정적 분석을 진행합니다..."
+                    echo "🚀 테스트를 진행하고 성적표와 함께 소나큐브로 전송합니다..."
                     
-                    // 권한 부여 및 빌드 (테스트 제외) - SonarQube 분석을 위해서는 클래스 파일이 필요합니다.
                     sh 'chmod +x gradlew'
-                    sh './gradlew clean build -x test'
                     
-                    // 젠킨스 시스템 설정에 등록된 'SonarQube' 서버 토큰을 자동으로 가져와 전송
+                    // 테스트 실행 및 JaCoCo 리포트 생성
+                    sh './gradlew clean test jacocoTestReport'
+                    
                     withSonarQubeEnv('SonarQube') { 
                         sh '''
                             ./gradlew sonar \
                             -Dsonar.projectKey=sw_team_3_robot_backend \
                             -Dsonar.projectName="Team 3 Robot Backend" \
-                            -Dsonar.java.binaries=build/classes
+                            -Dsonar.java.binaries=build/classes \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
                         '''
                     }
                 }
